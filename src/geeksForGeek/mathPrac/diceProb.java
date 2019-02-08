@@ -36,11 +36,9 @@ public class diceProb {
       int testCase = sc.nextInt();
       while (testCase > 0) {
          int n = sc.nextInt();
-         int[] inputArr1 = new int[n];
-         int len = n;
-         for (int i = 0; i < n; i++) {
-            inputArr1[i] = sc.nextInt();
-         }
+
+         System.out.println(7 - n);
+
          testCase--;
       }
       sc.close();
