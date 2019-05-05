@@ -35,8 +35,45 @@ public class ListUsingNode<E> implements List<E>
   @Override
   public boolean add( int index, E elem )
   {
-    // TODO Auto-generated method stub
+    checkIndex(index);
+    Node<E> prev = first;
+    Node<E> next = first.getNext();
+    int idx = 1;
+    
+    if(index == 0) {
+      return addFirst(elem);
+    }
+    if(index == size) {
+      return addLast(elem);
+    }
+    
+    while(prev.getNext() != null) {
+      if(idx == index) {
+        prev.setNext( new Node<E>(elem) );
+        prev.getNext().setNext( next );
+        size++;
+        return true;
+      }
+      prev = next;
+      next = next.getNext();
+      idx++;
+    }
     return false;
+  }
+  
+  public boolean addFirst(E elem) {
+    Node<E> temp  = new Node<E>(elem);
+    temp.setNext( first );
+    first = temp;
+    return true;
+  }
+  
+  public boolean addLast(E elem) {
+    Node<E> temp  = new Node<E>(elem);
+    last.setNext( temp );
+    last = temp;
+    size++;
+    return true;
   }
 
   @Override
@@ -93,6 +130,20 @@ public class ListUsingNode<E> implements List<E>
     // TODO Auto-generated method stub
     return null;
   }
+  
+  public void printList() {
+    Node<E> temp = first;
+    System.out.println(temp.getElement());
+    while(temp.getNext() != null) {
+      temp = temp.getNext();
+      System.out.println(temp.getElement());
+    }
+  }
 
+  private void checkIndex(int index) {
+    if(index < 0 || index > size) {
+      throw new ArrayIndexOutOfBoundsException();
+    }
+  }
 
 }
