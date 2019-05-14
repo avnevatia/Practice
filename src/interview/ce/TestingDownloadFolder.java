@@ -5,53 +5,45 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class TestingDownloadFile
-{
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-  private static String filePath = "C:\\ANKDEV\\test.txt";
+public class TestingDownloadFolder
+{
 
   public static void main( String[] args )
   {
     String oneDriveToken = "User YMpP0oLEjqrHy9CKhh+/2TnUSY6cLNA16C5/ue5PhL4=, Organization fa4c6d3fce29c7daca28535c36883c12, Element RsWQ3q/64UFETk+nM32sJD551TyBZo+5JT8tM+pxNMU=";
     String driveToken = "User YMpP0oLEjqrHy9CKhh+/2TnUSY6cLNA16C5/ue5PhL4=, Organization fa4c6d3fce29c7daca28535c36883c12, Element AQBsD5BmUSTWSFn1ajZ2JOZsaSw0ZUE01YkCfesv2LE=";
-    String oneDrivePath = "/googledrive/testOD.txt";
-    String drivePath = "/Test/test.txt";
+    String oneDrivePath = "/TestOD";
+    String drivePath = "/Test";
 
-//    downloadFile( oneDriveToken, oneDrivePath );
-//    downloadFile( driveToken, drivePath );
-
-    uploadFile( oneDriveToken, oneDrivePath );
+    downloadFile( oneDriveToken, oneDrivePath );
+    downloadFile( driveToken, drivePath );
 
   }
 
-  private static String downloadFile( String token, String path )
+  private static void downloadFile( String token, String path )
   {
 
-    String response = null;
-
-//    BufferedReader reader = null;
+    BufferedReader reader = null;
     try
     {
-      URL url = new URL( "https://staging.cloud-elements.com/elements/api-v2/files?path=" + path );
+      URL url = new URL( "https://staging.cloud-elements.com/elements/api-v2/folders/contents?path=" + path );
       HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
       connection.setRequestProperty( "authorization", token );
+      connection.setRequestProperty( "accept", "application/json" );
       connection.setDoOutput( true );
       connection.setRequestMethod( "GET" );
 
-//      reader = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
-//
+      reader = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+
 //      String line = null;
 //      StringWriter out = new StringWriter( connection.getContentLength() > 0 ? connection.getContentLength() : 2048 );
 //      
@@ -59,10 +51,13 @@ public class TestingDownloadFile
 //      {
 //        out.append( line );
 //      }
-//      
-//      response = out.toString();
+      
+      JSONParser parser = new JSONParser();
+      JSONObject jsonObject = (JSONObject) parser.parse(reader);
+      
+      System.out.println(jsonObject);
 
-      downloadUsingNIO( connection, path );
+//      downloadUsingNIO( connection, path );
 
       connection.disconnect();
 
@@ -71,8 +66,6 @@ public class TestingDownloadFile
     {
       e.printStackTrace();
     }
-
-    return response;
   }
 
   private static void downloadUsingNIO( HttpsURLConnection connection, String path ) throws IOException
@@ -118,30 +111,6 @@ public class TestingDownloadFile
     {
       System.out.println( "No file to download. Server replied HTTP code: " + responseCode );
     }
-  }
-
-  private static void uploadFile( String token, String path )
-  {
-    String charset = "UTF-8";
-    File textFile = new File( filePath );
-    try
-    {
-      MultipartUtility multipart = new MultipartUtility( "https://staging.cloud-elements.com/elements/api-v2/files?path=%2Fgoogledrive%2FtestOD.txt", charset,
-          token );
-
-      multipart.addFilePart( "file", textFile );
-
-      List<String> response = multipart.finish();
-      for( String line : response )
-      {
-        System.out.println( line );
-      }
-    }
-    catch( Exception e )
-    {
-      e.printStackTrace();
-    }
-
   }
 
 }
