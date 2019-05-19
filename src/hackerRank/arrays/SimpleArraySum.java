@@ -1,4 +1,4 @@
-package hackerRank;
+package hackerRank.arrays;
 
 import java.util.Scanner;
 

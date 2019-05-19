@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -20,14 +21,14 @@ import javax.net.ssl.HttpsURLConnection;
 public class TestingDownloadFile
 {
 
-  private static String filePath = "C:\\ANKDEV\\test.txt";
+  private static String filePath = "C:\\ANKDEV\\New Microsoft Word Document.txt";
 
   public static void main( String[] args )
   {
     String oneDriveToken = "User YMpP0oLEjqrHy9CKhh+/2TnUSY6cLNA16C5/ue5PhL4=, Organization fa4c6d3fce29c7daca28535c36883c12, Element RsWQ3q/64UFETk+nM32sJD551TyBZo+5JT8tM+pxNMU=";
     String driveToken = "User YMpP0oLEjqrHy9CKhh+/2TnUSY6cLNA16C5/ue5PhL4=, Organization fa4c6d3fce29c7daca28535c36883c12, Element AQBsD5BmUSTWSFn1ajZ2JOZsaSw0ZUE01YkCfesv2LE=";
-    String oneDrivePath = "/googledrive/testOD.txt";
-    String drivePath = "/Test/test.txt";
+    String oneDrivePath = "/googledrive/temp.txt";
+    String drivePath = "/Test/Test1/Copy of Copy of Test2.txt";
 
 //    downloadFile( oneDriveToken, oneDrivePath );
 //    downloadFile( driveToken, drivePath );
@@ -41,10 +42,10 @@ public class TestingDownloadFile
 
     String response = null;
 
-//    BufferedReader reader = null;
+    BufferedReader reader = null;
     try
     {
-      URL url = new URL( "https://staging.cloud-elements.com/elements/api-v2/files?path=" + path );
+      URL url = new URL( "https://staging.cloud-elements.com/elements/api-v2/files?path=" + URLEncoder.encode(path, "UTF-8"));
       HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
       connection.setRequestProperty( "authorization", token );
       connection.setDoOutput( true );
@@ -126,7 +127,7 @@ public class TestingDownloadFile
     File textFile = new File( filePath );
     try
     {
-      MultipartUtility multipart = new MultipartUtility( "https://staging.cloud-elements.com/elements/api-v2/files?path=%2Fgoogledrive%2FtestOD.txt", charset,
+      MultipartUtility multipart = new MultipartUtility( "https://staging.cloud-elements.com/elements/api-v2/files?path="+URLEncoder.encode(path, "UTF-8"), charset,
           token );
 
       multipart.addFilePart( "file", textFile );

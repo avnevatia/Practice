@@ -1,21 +1,21 @@
 package interview.ce;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.util.LinkedList;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class TestingDownloadFolder
 {
+
+  public static JSONArray jArray;;
 
   public static void main( String[] args )
   {
@@ -23,10 +23,77 @@ public class TestingDownloadFolder
     String driveToken = "User YMpP0oLEjqrHy9CKhh+/2TnUSY6cLNA16C5/ue5PhL4=, Organization fa4c6d3fce29c7daca28535c36883c12, Element AQBsD5BmUSTWSFn1ajZ2JOZsaSw0ZUE01YkCfesv2LE=";
     String oneDrivePath = "/TestOD";
     String drivePath = "/Test";
+    Boolean isDirectory;
+    JSONObject jObj;
+    FolderDetails tempFD;
 
-    downloadFile( oneDriveToken, oneDrivePath );
-    downloadFile( driveToken, drivePath );
+    LinkedList<FolderDetails> directoryList = new LinkedList<>();
+    directoryList.add( new FolderDetails( drivePath, true ) );
 
+    for( int i = 0; i < directoryList.size(); i++ )
+    {
+      tempFD = directoryList.get( i );
+      if( tempFD.isDirectory() )
+      {
+        downloadFile( driveToken, tempFD.getPath() );
+        
+        for( int j = 0; j < jArray.size(); j++ )
+        {
+          jObj = (JSONObject) jArray.get( j );
+          drivePath = (String) jObj.get( "path" );
+//          System.out.println( drivePath );
+          isDirectory = (Boolean) jObj.get( "directory" );
+//          System.out.println( isDirectory );
+          directoryList.add( new FolderDetails( drivePath, isDirectory ) );
+        }
+      }
+    }
+    for( FolderDetails directory : directoryList )
+    {
+      System.out.println( directory.getPath() + " ## " + directory.isDirectory() );
+      if(directory.isDirectory()) {
+        createFolder(oneDriveToken, directory.getPath());
+      }
+    }
+
+  }
+
+  private static void createFolder( String token, String path )
+  {
+    BufferedReader reader = null;
+    try
+    {
+      URL url = new URL( "https://staging.cloud-elements.com/elements/api-v2/folders" );
+      HttpsURLConnection httpsConn = (HttpsURLConnection) url.openConnection();
+      httpsConn.setRequestProperty( "authorization", token );
+      httpsConn.setDoOutput( true ); // indicates POST method
+      httpsConn.setRequestProperty( "Content-Type", "application/json; utf-8" );
+      httpsConn.setRequestProperty( "Accept", "application/json" );
+
+      String jsonInputString = "{\"path\":\"" + path + "\"}";
+
+      OutputStream os = httpsConn.getOutputStream();
+      byte[] input = jsonInputString.getBytes( "utf-8" );
+      os.write( input, 0, input.length );
+      
+      reader = new BufferedReader( new InputStreamReader( httpsConn.getInputStream() ) );
+
+      StringBuilder result = new StringBuilder();
+      String line;
+
+      while( (line = reader.readLine()) != null )
+      {
+        result.append( line );
+      }
+      System.out.println( result.toString() );
+
+      httpsConn.disconnect();
+
+    }
+    catch( Exception e )
+    {
+      e.printStackTrace();
+    }
   }
 
   private static void downloadFile( String token, String path )
@@ -36,80 +103,31 @@ public class TestingDownloadFolder
     try
     {
       URL url = new URL( "https://staging.cloud-elements.com/elements/api-v2/folders/contents?path=" + path );
-      HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-      connection.setRequestProperty( "authorization", token );
-      connection.setRequestProperty( "accept", "application/json" );
-      connection.setDoOutput( true );
-      connection.setRequestMethod( "GET" );
+      HttpsURLConnection httpsConn = (HttpsURLConnection) url.openConnection();
+      httpsConn.setRequestProperty( "authorization", token );
+      httpsConn.setRequestProperty( "accept", "application/json" );
+      httpsConn.setDoOutput( true );
+      httpsConn.setRequestMethod( "GET" );
 
-      reader = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+      reader = new BufferedReader( new InputStreamReader( httpsConn.getInputStream() ) );
 
-//      String line = null;
-//      StringWriter out = new StringWriter( connection.getContentLength() > 0 ? connection.getContentLength() : 2048 );
-//      
-//      while( (line = reader.readLine()) != null )
-//      {
-//        out.append( line );
-//      }
-      
+      StringBuilder result = new StringBuilder();
+      String line;
+
+      while( (line = reader.readLine()) != null )
+      {
+        result.append( line );
+      }
+//      System.out.println( result.toString() );
       JSONParser parser = new JSONParser();
-      JSONObject jsonObject = (JSONObject) parser.parse(reader);
-      
-      System.out.println(jsonObject);
+      jArray = (JSONArray) parser.parse( result.toString() );
 
-//      downloadUsingNIO( connection, path );
-
-      connection.disconnect();
+      httpsConn.disconnect();
 
     }
     catch( Exception e )
     {
       e.printStackTrace();
-    }
-  }
-
-  private static void downloadUsingNIO( HttpsURLConnection connection, String path ) throws IOException
-  {
-    int responseCode = connection.getResponseCode();
-
-    if( responseCode == HttpsURLConnection.HTTP_OK )
-    {
-      String fileName = "";
-      String disposition = connection.getHeaderField( "Content-Disposition" );
-      String contentType = connection.getContentType();
-      int contentLength = connection.getContentLength();
-
-//      if( disposition != null )
-//      {
-//        // extracts file name from header field
-//        int index = disposition.indexOf( "filename=" );
-//        if( index > 0 )
-//        {
-//          fileName = disposition.substring( index + 9, disposition.length() );
-//        }
-//      }
-//      else
-//      {
-      // extracts file name from URL
-      fileName = path.substring( path.lastIndexOf( "/" ) + 1, path.length() );
-//      }
-
-      System.out.println( "Content-Type = " + contentType );
-      System.out.println( "Content-Disposition = " + disposition );
-      System.out.println( "Content-Length = " + contentLength );
-      System.out.println( "fileName = " + fileName );
-
-      ReadableByteChannel rbc = Channels.newChannel( connection.getInputStream() );
-      FileOutputStream fos = new FileOutputStream( new File( "C:\\ANKDEV\\" + fileName ) );
-      fos.getChannel().transferFrom( rbc, 0, Long.MAX_VALUE );
-      fos.close();
-      rbc.close();
-
-      System.out.println( "File downloaded" );
-    }
-    else
-    {
-      System.out.println( "No file to download. Server replied HTTP code: " + responseCode );
     }
   }
 
