@@ -1,5 +1,11 @@
 package random.recursion;
 
+/**
+ * 
+ * Write a recursive function that, given a number n, returns the sum of the digits of the
+ * number n.
+ *
+ */
 public class SumOfN
 {
 
