@@ -11,7 +11,7 @@ package codeWars;
  * persistence(4) == 0 // because 4 is already a one-digit number
  */
 
-public class PersistentBurgger {
+public class PersistentBugger {
 
   public static void main(String[] args) {
     System.out.println(persistence(39));
