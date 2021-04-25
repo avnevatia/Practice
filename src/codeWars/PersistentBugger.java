@@ -14,26 +14,26 @@ package codeWars;
 public class PersistentBugger {
 
   public static void main(String[] args) {
-    System.out.println(persistence(39));
+    System.out.println(persistence(54));
   }
 
   public static int persistence(long n) {
 
-    //If given input is below 10 means it is single digit, so return 0.
+    // If given input is below 10 means it is single digit, so return 0.
     if (n < 10) {
       return 0;
     }
-    
+
     long mul = 1;
     int times = 1;
 
     while (n > 0) {
-      //mod operation to fetch last digit and multiply it.
+      // mod operation to fetch last digit and multiply it.
       mul *= (n % 10);
-      //division operation to get remainder.
+      // division operation to get remainder.
       n /= 10;
-      
-      //count till we get single digit and reset n with new mul val
+
+      // count till we get single digit and reset n with new mul val
       if (n == 0 && mul > 9) {
         ++times;
         n = mul;
